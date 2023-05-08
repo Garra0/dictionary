@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 
-public class MultiSocketClient {
+public class Client1 {
     public static void main(String[] args) {
         // hostName for the client
         String hostName = "127.0.0.1";
@@ -23,11 +23,13 @@ public class MultiSocketClient {
             // receive response from the server , when the server send it as out.println('ddd');
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String response = in.readLine();
-            
+
             System.out.println("Response from server: " + response);
 
             // close the socket
             socket.close();
+            in.close();
+            out.close();
         } catch (IOException e) {
             System.out.println("Exception caught when trying to connect to server or when communicating with server , hello y got error here maybe because y didn't run the server first :) ..");
             System.out.println(e.getMessage());
