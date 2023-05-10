@@ -1,9 +1,18 @@
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 
 public class Client1 {
     public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter a word to get the meaning: ");
+        String word = scanner.nextLine();
+        scanner.close();
+
+
         // hostName for the client
+        // i used same hostname in client1 because im in local network
         String hostName = "127.0.0.1";
         // portNumber for the server
         int portNumber = 8000; // the port for the server
@@ -17,14 +26,21 @@ public class Client1 {
             // PrintWriter: for send something to the server and the server will get it in obj of BufferedReader by using word_to_translate=in.readLine();
             // and like that I will send the word I want to translate to the server by using out.println(word_to_translate);
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            out.println("Hello from client");
+            out.println(word);
 
-
-            // receive response from the server , when the server send it as out.println('ddd');
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String response = in.readLine();
+            String line = "";
+            // reads message from server until "Over" is sent
+            while ((line = in.readLine()) != null)
+            {
+                System.out.println(line);
 
-            System.out.println("Response from server: " + response);
+            }
+            // receive response from the server , when the server send it as out.println('ddd');
+//            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//            String response = in.readLine();
+//
+//            System.out.println("Response from server: " + response);
 
             // close the socket
             socket.close();

@@ -1,7 +1,9 @@
 import java.io.*;
 import java.net.*;
-package com.mkyong;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 public class MultiSocketServer {
     // why ServerSocket object , why not just socket object? => because the multithreading
     // ServerSocket create a socket for me when I ask then its sup the multithreading
@@ -21,8 +23,8 @@ public class MultiSocketServer {
     public void start() {
         try {
             //how much time we join start fun
-            counter1 ++;
-            System.out.println("counter isssss: "+counter1);
+//            counter1 ++;
+//            System.out.println("counter isssss: "+counter1);
 
 
             // create the server ,  and I can do it in the constructor fun with using try,catch
@@ -37,8 +39,10 @@ public class MultiSocketServer {
                 // the server start working and after that he is stopped in this line waiting the client call (accept())
                 Socket clientSocket = serverSocket.accept();
                 //  clientSocket = Socket[addr=/127.0.0.1,port=54269,localport=8000]
-                counter2++;
-                System.out.println("******** counter2= "+counter2);
+
+//                counter2++;
+//                System.out.println("******** counter2= "+counter2);
+
                 System.out.println("New client connected: " + clientSocket);
                 System.out.println("New client Local Address: " + clientSocket.getLocalAddress());
 
@@ -54,21 +58,40 @@ public class MultiSocketServer {
     }
 
 
-    public static void Search_meaning_of_the_word_in_folder(String s){
-        // i add a file name pom.xml for the 'Gson gson = new Gson();'
-        String first_character=s.substring(0,1);
-        // i choose file have first character
-        File file = new File("data/"+first_character+".json");
-        // reader from the file
-        try {
-            FileReader reader = new FileReader(file);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+    // search in the JS files:
+    public static void search_the_meaning_of_word(String s,Socket clientSocket) throws IOException
+    {
+        // to find the file have this word , I take first_character from the word
+        String first_character=s.substring(0,1).toLowerCase();
+        // pick the correct file
+        FileReader reader = new FileReader("./src/data/"+first_character+".json");
+        // jsonObject witch read from json files
+        JsonObject json = new Gson().fromJson(reader, JsonObject.class);
+
+        // Search for the word
+        String wordToSearch = s.toLowerCase();
+        if (json.has(wordToSearch)) {
+            // for send the mean to client :
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+
+            // Get the meanings associated with the word
+            // in the file there are words , when I got the word witch I need ->
+            // I will look to 'meanings' because it's a list
+            // and inside it there are a lot def,s have several meaning
+            JsonArray meanings = json.getAsJsonObject(wordToSearch).getAsJsonArray("meanings");
+            for (int i = 0; i < meanings.size(); i++) {
+                // Get the definition associated with the meaning
+                JsonObject meaning = meanings.get(i).getAsJsonObject();
+                // def is carry the mean for the word I search for
+                String definition = meaning.get("def").getAsString();
+                // send to client ..
+                out.println("mean "+(i+1)+" is: "+definition);
+//                System.out.println("mean "+(i+1)+" is: "+definition);
+            }
+        } else {
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+            out.println("Word not found.");
         }
-
-        Gson gson = new Gson();
-
-
     }
 
     //this class made for executed every client solo .-.
@@ -94,12 +117,19 @@ public class MultiSocketServer {
                 // and we aren't make chat , so we can write this code without while...
                 while ((inputLine = in.readLine()) != null) {
                     //fun search in folder 'data' which have the files and meaning for the word
-                    Search_meaning_of_the_word_in_folder(inputLine);
 
-                    System.out.println("Received message from client: " + inputLine);
+                    out.println("Server received message: server start sending " );
+                    out.println("************************************************************" );
+                    search_the_meaning_of_word(inputLine,clientSocket);
+                    out.println("************************************************************" );
+                    out.println("Server received message: server end sending " );
+
+                    // this will print in the server console
+//                    System.out.println("Received message from client: " + inputLine);
 
                     // send something to the client when client get it as in.readLine();
-                    out.println("Server received message: " + inputLine);
+                    // i don't want to send inputLine to client..
+//                    out.println("Server received message: " + inputLine);
                 }
 
                 clientSocket.close();
@@ -125,6 +155,7 @@ public class MultiSocketServer {
 
 }
 
+// spare lines XD..
 
 //// A Java program for a Server
 //import java.net.*;
